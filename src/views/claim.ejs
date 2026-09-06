@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head><%- include('partials/head', { title: claim.policy_number + ' - Mini Claims Register' }) %></head>
+<body>
+<%- include('partials/header') %>
+<main>
+  <p><a href="/claims">&larr; Back to claims</a></p>
+  <% if (error) { %><div class="error"><%= error %></div><% } %>
+
+  <div class="panel">
+    <div style="display:flex; justify-content: space-between; align-items: start;">
+      <div>
+        <h2 style="margin: 0 0 4px;"><%= claim.policy_number %> &mdash; <%= claim.insured_name %></h2>
+        <p class="muted" style="margin: 0;"><%= claim.loss_nature %></p>
+      </div>
+      <span class="badge <%= claim.status %>"><%= statusLabels[claim.status] %></span>
+    </div>
+
+    <div class="grid-2" style="margin-top: 20px;">
+      <div class="stat"><div class="label">Loss date</div><div class="value"><%= claim.loss_date %></div></div>
+      <div class="stat"><div class="label">Date notified</div><div class="value"><%= claim.date_notified %></div></div>
+      <div class="stat"><div class="label">Currency</div><div class="value"><%= claim.currency %></div></div>
+      <div class="stat"><div class="label">Estimated loss</div><div class="value"><%= formatMinor(claim.estimated_minor, claim.currency) %></div></div>
+      <div class="stat"><div class="label">Approved amount</div><div class="value"><%= claim.approved_minor === null ? '—' : formatMinor(claim.approved_minor, claim.currency) %></div></div>
+      <div class="stat"><div class="label">Total paid</div><div class="value"><%= formatMinor(claim.total_paid_minor, claim.currency) %></div></div>
+      <div class="stat"><div class="label">Balance outstanding</div><div class="value"><%= claim.balance_minor === null ? '—' : formatMinor(claim.balance_minor, claim.currency) %></div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3 style="margin-top:0;"><%= claim.approved_minor === null ? 'Set approved amount' : 'Revise approved amount' %></h3>
+    <form class="inline" method="post" action="/claims/<%= claim.id %>/approve">
+      <div class="field">
+        <label for="approved_amount">Approved amount (<%= claim.currency %>)</label>
+        <input id="approved_amount" name="approved_amount" required placeholder="e.g. 5000.00"
+          value="<%= claim.approved_minor === null ? '' : formatMinor(claim.approved_minor, claim.currency) %>" />
+      </div>
+      <button class="button" type="submit">Save</button>
+    </form>
+  </div>
+
+  <div class="panel">
+    <h3 style="margin-top:0;">Payments</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Ccy</th>
+          <th class="num">Amount</th>
+          <th>FX rate</th>
+          <th class="num">In <%= claim.currency %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (payments.length === 0) { %>
+          <tr><td colspan="5" class="muted">No payments recorded yet.</td></tr>
+        <% } %>
+        <% payments.forEach(function(p) { %>
+          <tr>
+            <td><%= p.payment_date %></td>
+            <td><%= p.currency %></td>
+            <td class="num"><%= formatMinor(p.amount_minor, p.currency) %></td>
+            <td><%= p.fx_rate ? ('1 ' + p.currency + ' = ' + p.fx_rate + ' ' + claim.currency) : '—' %></td>
+            <td class="num"><%= formatMinor(p.converted_minor, claim.currency) %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h3 style="margin-top:0;">Record a payment</h3>
+    <form class="stack" method="post" action="/claims/<%= claim.id %>/payments">
+      <div class="field">
+        <label for="payment_date">Payment date</label>
+        <input type="date" id="payment_date" name="payment_date" required />
+      </div>
+      <div class="field">
+        <label for="currency">Currency</label>
+        <select id="currency" name="currency" required onchange="document.getElementById('fx-row').hidden = (this.value === '<%= claim.currency %>' || this.value === '')">
+          <option value="">Choose...</option>
+          <% currencies.forEach(function(c) { %>
+            <option value="<%= c.code %>"><%= c.code %> - <%= c.name %><%= c.code === claim.currency ? ' (claim currency)' : '' %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="field">
+        <label for="amount">Amount</label>
+        <input id="amount" name="amount" required placeholder="e.g. 1000.00" />
+      </div>
+      <div class="field" id="fx-row" hidden>
+        <label for="fx_rate">Exchange rate (units of <%= claim.currency %> per 1 unit of payment currency)</label>
+        <input id="fx_rate" name="fx_rate" placeholder="e.g. 1.27" />
+        <span class="hint">Required whenever the payment currency differs from the claim's currency (<%= claim.currency %>). The payment is recorded at this rate and converted into <%= claim.currency %> for the claim's paid/balance totals.</span>
+      </div>
+      <div>
+        <button class="button" type="submit">Record payment</button>
+      </div>
+    </form>
+  </div>
+</main>
+</body>
+</html>

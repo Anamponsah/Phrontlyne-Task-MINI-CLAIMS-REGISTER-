@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head><%- include('partials/head', { title: 'Claims - Mini Claims Register' }) %></head>
+<body>
+<%- include('partials/header') %>
+<main>
+  <form class="panel filters" method="get" action="/claims">
+    <div class="field">
+      <label for="from">Loss date from</label>
+      <input type="date" id="from" name="from" value="<%= filters.from || '' %>" />
+    </div>
+    <div class="field">
+      <label for="to">Loss date to</label>
+      <input type="date" id="to" name="to" value="<%= filters.to || '' %>" />
+    </div>
+    <div class="field">
+      <label for="status">Status</label>
+      <select id="status" name="status">
+        <option value="">All</option>
+        <% statusValues.forEach(function(s) { %>
+          <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= statusLabels[s] %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="field">
+      <label for="currency">Currency</label>
+      <select id="currency" name="currency">
+        <option value="">All</option>
+        <% currencies.forEach(function(c) { %>
+          <option value="<%= c.code %>" <%= filters.currency === c.code ? 'selected' : '' %>><%= c.code %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="field">
+      <button class="button" type="submit">Apply filters</button>
+    </div>
+    <% if (filters.from || filters.to || filters.status || filters.currency) { %>
+      <div class="field"><a class="button secondary" href="/claims">Clear</a></div>
+    <% } %>
+  </form>
+
+  <div class="panel">
+    <table>
+      <thead>
+        <tr>
+          <th>Policy #</th>
+          <th>Insured</th>
+          <th>Loss date</th>
+          <th>Notified</th>
+          <th>Nature</th>
+          <th>Ccy</th>
+          <th class="num">Estimated</th>
+          <th class="num">Approved</th>
+          <th class="num">Paid</th>
+          <th class="num">Balance</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (claims.length === 0) { %>
+          <tr><td colspan="11" class="muted">No claims match these filters.</td></tr>
+        <% } %>
+        <% claims.forEach(function(c) { %>
+          <tr class="clickable" onclick="window.location='/claims/<%= c.id %>'">
+            <td><%= c.policy_number %></td>
+            <td><%= c.insured_name %></td>
+            <td><%= c.loss_date %></td>
+            <td><%= c.date_notified %></td>
+            <td><%= c.loss_nature %></td>
+            <td><%= c.currency %></td>
+            <td class="num"><%= formatMinor(c.estimated_minor, c.currency) %></td>
+            <td class="num"><%= c.approved_minor === null ? '—' : formatMinor(c.approved_minor, c.currency) %></td>
+            <td class="num"><%= formatMinor(c.total_paid_minor, c.currency) %></td>
+            <td class="num"><%= c.balance_minor === null ? '—' : formatMinor(c.balance_minor, c.currency) %></td>
+            <td><span class="badge <%= c.status %>"><%= statusLabels[c.status] %></span></td>
+          </tr>
+        <% }) %>
+      </tbody>
+      <tfoot>
+        <% if (totals.length === 0) { %>
+          <tr><td colspan="11" class="muted">No totals to show.</td></tr>
+        <% } %>
+        <% totals.forEach(function(t) { %>
+          <tr class="currency-header"><td colspan="11">Totals - <%= t.currency %> (<%= t.count %> claim<%= t.count === 1 ? '' : 's' %>)</td></tr>
+          <tr>
+            <td colspan="6">&nbsp;</td>
+            <td class="num"><%= formatMinor(t.estimated_minor, t.currency) %></td>
+            <td class="num"><%= formatMinor(t.approved_minor, t.currency) %></td>
+            <td class="num"><%= formatMinor(t.paid_minor, t.currency) %></td>
+            <td class="num"><%= formatMinor(t.outstanding_minor, t.currency) %></td>
+            <td></td>
+          </tr>
+        <% }) %>
+      </tfoot>
+    </table>
+  </div>
+</main>
+</body>
+</html>
