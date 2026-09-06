@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head><%- include('partials/head', { title: 'Register claim - Mini Claims Register' }) %></head>
+<body>
+<%- include('partials/header') %>
+<main>
+  <div class="panel" style="max-width: 560px;">
+    <h2 style="margin-top:0;">Register a new claim</h2>
+    <% if (error) { %><div class="error"><%= error %></div><% } %>
+    <form class="stack" method="post" action="/claims">
+      <div class="field">
+        <label for="policy_number">Policy number</label>
+        <input id="policy_number" name="policy_number" required value="<%= form.policy_number || '' %>" />
+      </div>
+      <div class="field">
+        <label for="insured_name">Insured name</label>
+        <input id="insured_name" name="insured_name" required value="<%= form.insured_name || '' %>" />
+      </div>
+      <div class="field">
+        <label for="loss_date">Loss date</label>
+        <input type="date" id="loss_date" name="loss_date" required value="<%= form.loss_date || '' %>" />
+      </div>
+      <div class="field">
+        <label for="date_notified">Date notified</label>
+        <input type="date" id="date_notified" name="date_notified" required value="<%= form.date_notified || '' %>" />
+      </div>
+      <div class="field">
+        <label for="loss_nature">Nature of loss</label>
+        <input id="loss_nature" name="loss_nature" required value="<%= form.loss_nature || '' %>" />
+      </div>
+      <div class="field">
+        <label for="currency">Currency</label>
+        <select id="currency" name="currency" required>
+          <option value="">Choose...</option>
+          <% currencies.forEach(function(c) { %>
+            <option value="<%= c.code %>" <%= form.currency === c.code ? 'selected' : '' %>><%= c.code %> - <%= c.name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="field">
+        <label for="estimated_amount">Estimated loss amount</label>
+        <input id="estimated_amount" name="estimated_amount" required placeholder="e.g. 1200.00" value="<%= form.estimated_amount || '' %>" />
+        <span class="hint">No approved amount is set at registration - the claim starts as "Reserved, not yet settled".</span>
+      </div>
+      <div>
+        <button class="button" type="submit">Register claim</button>
+        <a class="button secondary" href="/claims">Cancel</a>
+      </div>
+    </form>
+  </div>
+</main>
+</body>
+</html>
