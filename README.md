@@ -6,7 +6,7 @@ or more payments — each potentially in its own currency — and see the
 approved amount, total paid, and outstanding balance for every claim, with a
 filterable list and a totals row grouped by currency.
 
-Stack: **Node.js + TypeScript + Express + SQLite** (`better-sqlite3`),
+Stack: **Node.js + TypeScript + 9 + SQLite** (`better-sqlite3`),
 server-rendered with **EJS**. No frontend build step, no framework lock-in —
 chosen for speed and because the interesting part of this exercise is the
 data model and the money arithmetic, not the UI stack.
@@ -39,6 +39,9 @@ Environment variables:
 - `PORT` — defaults to `3000`.
 - `DATABASE_PATH` — defaults to `data/claims.sqlite`; set this to point at a
   writable path on whatever host you deploy to.
+
+## data base files
+the file only exists after you've run the app at least once (npm run dev), since that's what creates and seeds it.
 
 ## Deploying
 
@@ -179,6 +182,7 @@ no drift at all.
   override, instead of always requiring the user to type one in.
 - **An audit trail** for approved-amount revisions and payment edits/voids,
   rather than allowing the approved amount to be silently overwritten.
+  (To create a permission based system)
 - **Server + client-side validation parity** — right now validation lives
   entirely on the server (with error messages re-rendering the form); a
   production version would mirror the currency-decimals and non-negative
