@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: mini-claims-register
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_PATH
+        value: /opt/render/project/src/data/claims.sqlite
